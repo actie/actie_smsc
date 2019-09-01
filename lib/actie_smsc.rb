@@ -2,10 +2,9 @@
 
 require 'actie_smsc/version'
 require 'actie_smsc/configuration'
+require 'faraday'
 
 module ActieSmsc
-
-
   class << self
     def config
       @config ||= Configuration.new
@@ -106,7 +105,7 @@ module ActieSmsc
     private
 
     def base_url
-      "#{ !config.use_https ? 'http' : 'https' }://smsc.ru/sys/"
+      "#{ !config.use_https ? 'http' : 'https' }://smsc.ru"
     end
 
     def connection
@@ -124,8 +123,10 @@ module ActieSmsc
     def request(endpoint, params = nil)
       req_method = !config.use_post ? :get : :post
 
-      connection.public_send(req_method, "#{endpoint}.php") do |req|
-        req.params.merge!(params)
+      connection.public_send(req_method, "/sys/#{endpoint}.php") do |req|
+        # TODO: Понять можно ли отправлять параметры в body POST запроса, или обязательно в query_params, особенно login & password
+        # req.params.merge!(params)
+        req.body = params
       end
     end
 
