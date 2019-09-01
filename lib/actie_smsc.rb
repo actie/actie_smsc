@@ -86,13 +86,27 @@ module ActieSmsc
       resp
     end
 
-    # def balance
-    # end
+    def balance
+      resp = request('balance')
+
+      # TODO: Протестировать
+      # (balance) или (0, -error)
+      # if config.debug
+      #   if m.length < 2
+      #     puts "Сумма на счете: #{m[0]}\n"
+      #   else
+      #     puts "Ошибка №#{m[1][1]}\n"
+      #   end
+      # end
+
+      # return m.length < 2 ? m[0] : false
+      resp
+    end
 
     private
 
     def base_url
-      "#{config.use_https ? 'https' : 'http'}://smsc.ru/sys/"
+      "#{ !config.use_https ? 'http' : 'https' }://smsc.ru/sys/"
     end
 
     def connection
@@ -107,7 +121,7 @@ module ActieSmsc
       )
     end
 
-    def request(endpoint, params)
+    def request(endpoint, params = nil)
       req_method = !config.use_post ? :get : :post
 
       connection.public_send(req_method, "#{endpoint}.php") do |req|
