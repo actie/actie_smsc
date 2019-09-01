@@ -1,11 +1,17 @@
 # frozen_string_literal: true
 
+require 'logger'
+
 module ActieSmsc
+  class InvalidConfigurationError < StandardError; end
   class InvalidConfigurationError < StandardError; end
 
   class Configuration
-    attr_accessor :use_post, :use_https, :charset, :debug, :logger, :log_enabled
+    VALID_CHARSETS = %w[utf-8 koi8-r windows-1251].freeze
+
+    attr_accessor :use_post, :use_https, :debug, :logger, :log_enabled
     attr_writer :login, :password, :from_email
+    attr_reader :charset
 
     def initialize
       @login = nil
@@ -37,6 +43,14 @@ module ActieSmsc
       return @from_email if @from_email
 
       raise InvalidConfigurationError, 'from_email must be specified'
+    end
+
+    def charset=(new_charset)
+      unless VALID_CHARSETS.include?(new_charset)
+        raise InvalidConfigurationError, "charset should be one of #{VALID_CHARSETS}"
+      end
+
+      @charset = new_charset
     end
   end
 end

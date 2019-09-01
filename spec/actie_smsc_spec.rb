@@ -1,9 +1,25 @@
+# frozen_string_literal: true
+
 RSpec.describe ActieSmsc do
-  it "has a version number" do
-    expect(ActieSmsc::VERSION).not_to be nil
+  it 'has a version number' do
+    expect(described_class::VERSION).not_to be nil
   end
 
-  it "does something useful" do
-    expect(false).to eq(true)
+  describe '#configuration' do
+    it 'returns and instance of Configuration class' do
+      expect(described_class.configuration).to be_kind_of(described_class::Configuration)
+    end
+  end
+
+  describe '#configure' do
+    subject(:configure) do
+      described_class.configure { |config| config.charset = 'koi8-r' }
+    end
+
+    after { described_class.configure { |config| config.charset = 'utf-8' } }
+
+    it 'changes configuration parameters' do
+      expect { configure }.to change { described_class.configuration.charset }.from('utf-8').to('koi8-r')
+    end
   end
 end

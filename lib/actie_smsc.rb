@@ -1,4 +1,7 @@
-require "actie_smsc/version"
+# frozen_string_literal: true
+
+require 'actie_smsc/version'
+require 'actie_smsc/configuration'
 
 module ActieSmsc
   class << self
