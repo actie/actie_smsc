@@ -9,7 +9,7 @@ module ActieSmsc
   class Configuration
     VALID_CHARSETS = %w[utf-8 koi8-r windows-1251].freeze
 
-    attr_accessor :use_post, :use_https, :debug, :logger, :log_enabled
+    attr_accessor :use_post, :use_https, :debug, :logger
     attr_writer :login, :password, :from_email
     attr_reader :charset
 
@@ -24,7 +24,6 @@ module ActieSmsc
       @debug = false
 
       @logger = defined?(Rails) ? Rails.logger : Logger.new($stdout)
-      @log_enabled = false
     end
 
     def login

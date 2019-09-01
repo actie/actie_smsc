@@ -20,10 +20,6 @@ RSpec.describe ActieSmsc::Configuration do
       expect(config.debug).to eq(false)
     end
 
-    it 'returns correct value for log_enabled' do
-      expect(config.log_enabled).to eq(false)
-    end
-
     it 'returns correct value for logger' do
       expect(config.logger).to be_a(Logger)
     end
@@ -80,12 +76,6 @@ RSpec.describe ActieSmsc::Configuration do
     it 'changes value for debug' do
       expect { config.debug = true }.to(
         change { config.debug }.from(false).to(true)
-      )
-    end
-
-    it 'changes value for log_enabled' do
-      expect { config.log_enabled = true }.to(
-        change { config.log_enabled }.from(false).to(true)
       )
     end
 
