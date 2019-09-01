@@ -1,6 +1,13 @@
 require "actie_smsc/version"
 
 module ActieSmsc
-  class Error < StandardError; end
-  # Your code goes here...
+  class << self
+    def configuration
+      @configuration ||= Configuration.new
+    end
+
+    def configure
+      yield(configuration)
+    end
+  end
 end

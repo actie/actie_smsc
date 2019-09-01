@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Fedor Koshel']
   spec.email         = ['alexsnaumov@gmail.com']
 
-  spec.summary       = %q{TODO: Write a short summary, because RubyGems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
+  spec.summary       = 'Gem for using SMSC API in your ruby app'
+  spec.description   = 'This gem based on the ruby library described on: https://smsc.ru/api/code/libraries/http_smtp/ruby/'
   spec.homepage      = 'https://github.com/actie/smsc'
   spec.license       = 'MIT'
 
