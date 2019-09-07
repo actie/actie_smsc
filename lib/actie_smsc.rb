@@ -5,6 +5,8 @@ require 'actie_smsc/configuration'
 require 'faraday'
 
 module ActieSmsc
+  class SmscError < StandardError; end
+
   class << self
     def config
       @config ||= Configuration.new
@@ -24,21 +26,16 @@ module ActieSmsc
 
       resp = request('send', request_params)
 
-      # TODO: Протестировать
-      # (id, cnt, cost, balance) или (id, -error)
-      # if config.debug
-      #   if m[1] > "0"
-      #     puts "Сообщение отправлено успешно. ID: #{m[0]}, всего SMS: #{m[1]}, стоимость: #{m[2]}, баланс: #{m[3]}\n"
-      #   else
-      #     puts "Ошибка №#{m[1][1]}" + (m[0] > "0" ? ", ID: #{m[0]}" : "") + "\n";
-      #   end
-      # end
+      check_response_for_exception(resp.body)
 
-      resp
+      body = resp.body.split(',')
+      {
+        id: body[0].to_i,
+        cnt: body[1].to_i,
+        cost: body[2].to_f,
+        balance: body[3].to_f
+      }
     end
-
-    # def send_sms_mail
-    # end
 
     def sms_cost(phones, message, translit: 0, format: nil, sender: nil, **query_params)
       request_params = { cost: 1, phones: phones_string(phones), mes: message }
@@ -49,57 +46,50 @@ module ActieSmsc
 
       resp = request('send', request_params)
 
-      # TODO: Протестировать
-      # (cost, cnt) или (0, -error)
-      # if config.debug
-      #   if m[1] > "0"
-      #     puts "Стоимость рассылки: #{m[0]}. Всего SMS: #{m[1]}\n"
-      #   else
-      #     puts "Ошибка №#{m[1][1]}\n"
-      #   end
-      # end
+      check_response_for_exception(resp.body)
 
-      resp
+      body = resp.body.split(',')
+      { cost: body[0].to_f, cnt: body[1].to_i }
     end
 
     def status(id, phone, all: false)
       request_params = { phone: phone, id: id }
-      request_params[:all] = all && all != 0 ? 1 : 0
+      request_params[:all] = (all && all != 0) ? 1 : 0
 
       resp = request('status', request_params)
 
-      # TODO: Протестировать
-      # (status, time, err, ...) или (0, -error)
-      # if config.debug
-      #   if m[1] != "" && m[1] >= "0"
-      #     puts "Статус SMS = #{m[0]}" + (m[1] > "0" ? ", время изменения статуса - " + Time.at(m[1].to_i).strftime("%d.%m.%Y %T") : "") + "\n"
-      #   else
-      #     puts "Ошибка №#{m[1][1]}\n"
-      #   end
-      # end
+      check_response_for_exception(resp.body)
+      body = resp.body.split(',')
+      result = {
+        status: body[0].to_i,
+        change_time: Time.at(body[1].to_i),
+        error_code: body[2].to_i
+      }
+      # TODO: Implement HLR requests data:
+      # для отправленного SMS (<статус>, <время изменения>, <код ошибки sms>)
+      # для HLR-запроса (<статус>, <время изменения>, <код ошибки sms>, <код IMSI SIM-карты>, <номер сервис-центра>,
+      # <код страны регистрации>, <код оператора абонента>, <название страны регистрации>, <название оператора абонента>,
+      # <название роуминговой страны>, <название роумингового оператора>)
 
-      # if all && m.size > 9 && ((defined?(m[14])).nil? || m[14] != "HLR")
-      #   m = (m.join(",")).split(",", 9)
-      # end
-
-      resp
+      if all
+        result.merge!(
+          send_time: Time.at(body[-7].to_i),
+          phone: body[-6],
+          cost: body[-5].to_f,
+          sender: body[-4],
+          status_message: CGI.unescape(body[-3]),
+          message: body[-2]
+        )
+      end
+      result
     end
 
     def balance
       resp = request('balance')
 
-      # TODO: Протестировать
-      # (balance) или (0, -error)
-      # if config.debug
-      #   if m.length < 2
-      #     puts "Сумма на счете: #{m[0]}\n"
-      #   else
-      #     puts "Ошибка №#{m[1][1]}\n"
-      #   end
-      # end
+      check_response_for_exception(resp.body)
 
-      # return m.length < 2 ? m[0] : false
-      resp
+      resp.body.to_f
     end
 
     private
@@ -108,25 +98,28 @@ module ActieSmsc
       "#{ !config.use_https ? 'http' : 'https' }://smsc.ru"
     end
 
-    def connection
-      Faraday.new(
-        url: base_url,
-        params: {
-          login: config.login,
-          psw: config.password,
-          charset: config.charset,
-          fmt: 1 # TODO: Add config for responce formats https://smsc.ru/api/http/
-        }
-      )
+    def base_params
+      {
+        login: config.login,
+        psw: config.password,
+        charset: config.charset,
+        fmt: 1
+      }
     end
 
-    def request(endpoint, params = nil)
+    def connection
+      Faraday.new(url: base_url)
+    end
+
+    def request(endpoint, params = {})
       req_method = !config.use_post ? :get : :post
 
       connection.public_send(req_method, "/sys/#{endpoint}.php") do |req|
-        # TODO: Понять можно ли отправлять параметры в body POST запроса, или обязательно в query_params, особенно login & password
-        # req.params.merge!(params)
-        req.body = params
+        if req_method == :get
+          req.params = base_params.merge(params)
+        else
+          req.body = base_params.merge(params)
+        end
       end
     end
 
@@ -152,6 +145,12 @@ module ActieSmsc
       else
         phones
       end
+    end
+
+    def check_response_for_exception(body)
+      code = body.split(',')[1].to_i
+
+      raise SmscError, "Error code: #{code.abs}" if code < 0
     end
   end
 end
