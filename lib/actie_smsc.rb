@@ -3,6 +3,7 @@
 require 'actie_smsc/version'
 require 'actie_smsc/configuration'
 require 'faraday'
+require 'json'
 
 module ActieSmsc
   class SmscError < StandardError; end
@@ -19,7 +20,7 @@ module ActieSmsc
     def send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, sender: nil, **query_params)
       request_params = { cost: 3, phones: phones_string(phones), mes: message, id: id }
       request_params[:translit] = (0..2).include?(translit) ? translit : 0
-      request_params[:format] = format_string(format) if format_string(format)
+      request_params[format] = format_value(format) if format_value(format)
       request_params[:sender] = sender if sender
       request_params[:time] = time if time
       request_params.merge!(query_params)
@@ -28,19 +29,28 @@ module ActieSmsc
 
       check_response_for_exception(resp.body)
 
-      body = resp.body.split(',')
-      {
-        id: body[0].to_i,
-        cnt: body[1].to_i,
-        cost: body[2].to_f,
-        balance: body[3].to_f
-      }
+      case query_params[:fmt]
+      when 2,0
+        resp.body
+      when 3
+        JSON.parse(resp.body)
+      when :response
+        resp
+      else
+        body = resp.body.split(',')
+        {
+          id: body[0].to_i,
+          cnt: body[1].to_i,
+          cost: body[2].to_f,
+          balance: body[3].to_f
+        }
+      end
     end
 
     def sms_cost(phones, message, translit: 0, format: nil, sender: nil, **query_params)
       request_params = { cost: 1, phones: phones_string(phones), mes: message }
       request_params[:translit] = (0..2).include?(translit) ? translit : 0
-      request_params[:format] = format_string(format) if format_string(format)
+      request_params[format] = format_value(format) if format_value(format)
       request_params[:sender] = sender if sender
       request_params.merge!(query_params)
 
@@ -48,8 +58,17 @@ module ActieSmsc
 
       check_response_for_exception(resp.body)
 
-      body = resp.body.split(',')
-      { cost: body[0].to_f, cnt: body[1].to_i }
+      case query_params[:fmt]
+      when 2,0
+        resp.body
+      when 3
+        JSON.parse(resp.body)
+      when :response
+        resp
+      else
+        body = resp.body.split(',')
+        { cost: body[0].to_f, cnt: body[1].to_i }
+      end
     end
 
     def status(id, phone, all: false)
@@ -59,29 +78,39 @@ module ActieSmsc
       resp = request('status', request_params)
 
       check_response_for_exception(resp.body)
-      body = resp.body.split(',')
-      result = {
-        status: body[0].to_i,
-        change_time: Time.at(body[1].to_i),
-        error_code: body[2].to_i
-      }
-      # TODO: Implement HLR requests data:
-      # для отправленного SMS (<статус>, <время изменения>, <код ошибки sms>)
-      # для HLR-запроса (<статус>, <время изменения>, <код ошибки sms>, <код IMSI SIM-карты>, <номер сервис-центра>,
-      # <код страны регистрации>, <код оператора абонента>, <название страны регистрации>, <название оператора абонента>,
-      # <название роуминговой страны>, <название роумингового оператора>)
 
-      if all
-        result.merge!(
-          send_time: Time.at(body[-7].to_i),
-          phone: body[-6],
-          cost: body[-5].to_f,
-          sender: body[-4],
-          status_message: CGI.unescape(body[-3]),
-          message: body[-2]
-        )
+      case query_params[:fmt]
+      when 2,0
+        resp.body
+      when 3
+        JSON.parse(resp.body)
+      when :response
+        resp
+      else
+        body = resp.body.split(',')
+        result = {
+          status: body[0].to_i,
+          change_time: Time.at(body[1].to_i),
+          error_code: body[2].to_i
+        }
+        # TODO: Implement HLR requests data:
+        # для отправленного SMS (<статус>, <время изменения>, <код ошибки sms>)
+        # для HLR-запроса (<статус>, <время изменения>, <код ошибки sms>, <код IMSI SIM-карты>, <номер сервис-центра>,
+        # <код страны регистрации>, <код оператора абонента>, <название страны регистрации>, <название оператора абонента>,
+        # <название роуминговой страны>, <название роумингового оператора>)
+
+        if all
+          result.merge!(
+            send_time: Time.at(body[-7].to_i),
+            phone: body[-6],
+            cost: body[-5].to_f,
+            sender: body[-4],
+            status_message: CGI.unescape(body[-3]),
+            message: body[-2]
+          )
+        end
+        result
       end
-      result
     end
 
     def balance
@@ -123,19 +152,19 @@ module ActieSmsc
       end
     end
 
-    def format_string(format)
+    def format_value(format)
       {
-        flash:   'flash=1',
-        push:    'push=1',
-        hlr:     'hlr=1',
-        bin:     'bin=1',
-        bin_hex: 'bin=2',
-        ping:    'ping=1',
-        mms:     'mms=1',
-        mail:    'mail=1',
-        call:    'call=1',
-        viber:   'viber=1',
-        soc:     'soc=1'
+        flash:   1,
+        push:    1,
+        hlr:     1,
+        bin:     1,
+        bin_hex: 2,
+        ping:    1,
+        mms:     1,
+        mail:    1,
+        call:    1,
+        viber:   1,
+        soc:     1
       }[format]
     end
 

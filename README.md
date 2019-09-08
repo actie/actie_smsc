@@ -64,7 +64,7 @@ query - hash with additional parameters which will be added to the request (e.g.
 
 Method returns result hash:
 ```ruby
-{ id: 7600, cnt: 1, cost: 12.32, balance: 1234.12}
+{ id: 7600, cnt: 1, cost: 12.32, balance: 1234.12 }
 ```
 
 ### Sms cost
@@ -73,7 +73,7 @@ Method returns result hash:
 ActieSmsc.sms_cost(phones, message, translit: 0, format: nil, sender: nil, **query_params)
 ```
 
-This method checks the cost fo the message. It receives the same parameters as `send_sms` method.
+This method checks the message cost. It receives the same parameters as `send_sms` method.
 
 Returns the result hash:
 ```ruby
