@@ -120,10 +120,13 @@ This method returns the balance of your SMSC account as float number.
 
 ### Response format
 
-There is poorly described parameter `fmt` which change the response format. (You can find description here: https://smsc.ru/api/http/send/sms/).
+There is poorly described parameter `fmt` which changes the response format. (You can find description here: https://smsc.ru/api/http/send/sms/).
 The default value is 1 - it returns the string with numbers, which then parsed to the result hash.
+
 2 - is an XML response, returned as a string.
+
 3 - json response, returned as parsed hash.
+
 0 - another form of string response.
 
 Formats 2 and 3 are usefull for the debugging. Because you can find more detaild error descriptions:
