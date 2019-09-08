@@ -20,7 +20,7 @@ Or install it yourself as:
 
 ## Configuration
 
-For change the configuration, create the file `config/initializers/actie_smsc.rb` in your project like shown in example.
+To change the configuration, create the file `config/initializers/actie_smsc.rb` in your project. Like shown in example:
 
 ```ruby
 ActieSmsc.configure do |config|
@@ -43,7 +43,7 @@ logger = Logger.new($stdout)
 
 ## Usage
 
-There are four publick methods for different API endpoints. Each method returns result as hash, or number (balance). In case of invalid responce `SmscError` will be raised with error code in message.
+There are four public methods for different API endpoints. Each method returns a result hash, or number (balance). In case of invalid response `SmscError` will be raised with error code in message.
 
 ### Send sms
 
@@ -51,14 +51,16 @@ There are four publick methods for different API endpoints. Each method returns 
 ActieSmsc.send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, sender: nil, **query_params)
 ```
 
-The required parameters are: phones - array or string separated by commas and message text. Other parameters have default values and described in SMSC library:
+The required parameters are: `phones` - array or string separated by commas and `message` as string. Other parameters have default values and described in SMSC library.
 
+```
 translit - transliterate message text. Values:1,2 or 0
 time - delivery time (DDMMYYhhmm, h1-h2, 0ts, +m)
 id - message id. Value - integer number from 1 to 2147483647.
-format - message format. Values: `[:flash, :push, :hlr, :bin, :bin_hex, :ping, :mms, :mail, :call, :viber, :soc]`
+format - message format. Values: [:flash, :push, :hlr, :bin, :bin_hex, :ping, :mms, :mail, :call, :viber, :soc]
 sender - Sender name. To disable default name use empty line, or '.'
-query - hash with additional parameters which will be added to the request (e.g. `{ valid: '01:00', maxsms: 3, tz: 2 }`)
+query - hash with additional parameters which will be added to the request (e.g. { valid: '01:00', maxsms: 3, tz: 2 })
+```
 
 Method returns result hash:
 ```ruby
