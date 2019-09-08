@@ -47,10 +47,6 @@ RSpec.describe ActieSmsc::Configuration do
       it 'raises exception if password is not defined' do
         expect { config.password }.to raise_error(ActieSmsc::InvalidConfigurationError)
       end
-
-      it 'raises exception if from_email is not defined' do
-        expect { config.from_email }.to raise_error(ActieSmsc::InvalidConfigurationError)
-      end
     end
   end
 

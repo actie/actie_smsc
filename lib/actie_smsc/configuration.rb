@@ -10,13 +10,12 @@ module ActieSmsc
     VALID_CHARSETS = %w[utf-8 koi8-r windows-1251].freeze
 
     attr_accessor :use_post, :use_https, :debug, :logger
-    attr_writer :login, :password, :from_email
+    attr_writer :login, :password
     attr_reader :charset
 
     def initialize
       @login = nil
       @password = nil
-      @from_email = nil
 
       @use_post = true
       @use_https = true
@@ -38,11 +37,6 @@ module ActieSmsc
       raise InvalidConfigurationError, 'password must be specified'
     end
 
-    def from_email
-      return @from_email if @from_email
-
-      raise InvalidConfigurationError, 'from_email must be specified'
-    end
 
     def charset=(new_charset)
       unless VALID_CHARSETS.include?(new_charset)
