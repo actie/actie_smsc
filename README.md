@@ -36,7 +36,7 @@ The full parameters list for configuration with default values:
 ```
 use_post = true # Use POST request instead of GET
 use_https = true # Use HTTPS request instead of HTTP
-charset = 'utf-8'
+charset = 'utf-8' # valid charsets are: utf-8, koi8-r and windows-1251
 debug = false
 logger = Logger.new($stdout)
 ```
@@ -121,13 +121,14 @@ This method returns the balance of your SMSC account as float number.
 ### Response format
 
 There is poorly described parameter `fmt` which changes the response format. (You can find description here: https://smsc.ru/api/http/send/sms/).
+
 The default value is 1 - it returns the string with numbers, which then parsed to the result hash.
 
 2 - is an XML response, returned as a string.
 
 3 - json response, returned as parsed hash.
 
-0 - another form of string response.
+0 - another form of string response `(OK - 1 SMS, ID - 1234)`.
 
 Formats 2 and 3 are usefull for the debugging. Because you can find more detaild error descriptions:
 ```
