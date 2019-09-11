@@ -18,8 +18,8 @@ module ActieSmsc
       yield(config)
     end
 
-    def send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, sender: nil, fmt: 1, query_params: {})
-      request_params = { cost: 3, phones: phones_string(phones), mes: message, id: id }
+    def send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, sender: nil, fmt: 1, **query_params)
+      request_params = { cost: 3, phones: phones_string(phones), mes: message, id: id, fmt: fmt }
       request_params[:translit] = (0..2).include?(translit) ? translit : 0
       request_params[format] = format_value(format) if format_value(format)
       request_params[:sender] = sender if sender
@@ -48,8 +48,8 @@ module ActieSmsc
       end
     end
 
-    def sms_cost(phones, message, translit: 0, format: nil, sender: nil, fmt: 1, query_params: {})
-      request_params = { cost: 1, phones: phones_string(phones), mes: message }
+    def sms_cost(phones, message, translit: 0, format: nil, sender: nil, fmt: 1, **query_params)
+      request_params = { cost: 1, phones: phones_string(phones), mes: message, fmt: fmt }
       request_params[:translit] = (0..2).include?(translit) ? translit : 0
       request_params[format] = format_value(format) if format_value(format)
       request_params[:sender] = sender if sender
@@ -73,7 +73,7 @@ module ActieSmsc
     end
 
     def status(id, phone, all: false, fmt: 1)
-      request_params = { phone: phone, id: id }
+      request_params = { phone: phone, id: id, fmt: fmt }
       request_params[:all] = (all && all != 0) ? 1 : 0
 
       resp = request('status', request_params)
@@ -115,7 +115,7 @@ module ActieSmsc
     end
 
     def balance(fmt: 1)
-      resp = request('balance')
+      resp = request('balance', fmt: fmt)
 
       check_response_for_exception(resp.body)
 

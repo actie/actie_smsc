@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'webmock/rspec'
+require 'timecop'
 require 'pry'
 
 RSpec.describe ActieSmsc do
@@ -32,14 +33,31 @@ RSpec.describe ActieSmsc do
   end
 
   describe '#send_sms' do
+    before { Timecop.freeze('2019-11-09T12:25') }
+    after { Timecop.return }
+
     subject(:request) { described_class.send_sms(phones, message, request_params) }
 
     let(:phones) { %w[79991234567 79997654321] }
     let(:message) { 'test message' }
-    let(:request_params) { {} }
+    let(:request_params) { { id: 12345, fmt: 2, time: Time.now, charset: 'koi8-r', translit: 1, other_parameter: 'yes' } }
 
     it 'makes a request with correct params' do
-      stub = stub_request(:post, 'https://smsc.ru/sys/send.php?charset=utf-8&fmt=1&login=test_login&psw=test_passwd')
+      stub = stub_request(:post, 'https://smsc.ru/sys/send.php').with(
+        body: {
+          'cost' => '3',
+          'phones' => '79991234567,79997654321',
+          'mes' => message,
+          'time' => '0911191225',
+          'fmt' => '2',
+          'id' => '12345',
+          'charset' => 'koi8-r',
+          'login' => 'test_login',
+          'psw' => 'test_passwd',
+          'translit' => '1',
+          'other_parameter' => 'yes'
+        }
+      )
       request
       expect(stub).to have_been_requested
     end
@@ -50,7 +68,21 @@ RSpec.describe ActieSmsc do
       end
 
       it 'makes a request using http' do
-        stub = stub_request(:post, 'http://smsc.ru/sys/send.php?charset=utf-8&fmt=1&login=test_login&psw=test_passwd')
+        stub = stub_request(:post, 'http://smsc.ru/sys/send.php').with(
+          body: {
+            'cost' => '3',
+            'phones' => '79991234567,79997654321',
+            'mes' => message,
+            'time' => '0911191225',
+            'fmt' => '2',
+            'id' => '12345',
+            'charset' => 'koi8-r',
+            'login' => 'test_login',
+            'psw' => 'test_passwd',
+            'translit' => '1',
+            'other_parameter' => 'yes'
+          }
+        )
         request
         expect(stub).to have_been_requested
       end
@@ -62,7 +94,11 @@ RSpec.describe ActieSmsc do
       end
 
       it 'makes a request using GET' do
-        stub = stub_request(:get, 'https://smsc.ru/sys/send.php?charset=utf-8&fmt=1&login=test_login&psw=test_passwd')
+        stub = stub_request(
+          :get,
+          'https://smsc.ru/sys/send.php?charset=koi8-r&cost=3&fmt=2&id=12345&login=test_login&mes=test%20message&other_parameter=yes&phones=79991234567,79997654321&psw=test_passwd&time=0911191225&translit=1'
+        )
+
         request
         expect(stub).to have_been_requested
       end
@@ -78,7 +114,18 @@ RSpec.describe ActieSmsc do
     let(:request_params) { {} }
 
     it 'makes a request with correct params' do
-      stub = stub_request(:post, 'https://smsc.ru/sys/send.php?charset=utf-8&fmt=1&login=test_login&psw=test_passwd')
+      stub = stub_request(:post, 'https://smsc.ru/sys/send.php').with(
+        body: {
+          'cost' => '1',
+          'phones' => '79991234567,79997654321',
+          'mes' => message,
+          'fmt' => '1',
+          'charset' => 'utf-8',
+          'login' => 'test_login',
+          'psw' => 'test_passwd',
+          'translit' => '0'
+        }
+      )
       request
       expect(stub).to have_been_requested
     end
@@ -88,9 +135,39 @@ RSpec.describe ActieSmsc do
     subject(:request) { described_class.status(123, '79991234567') }
 
     it 'makes a request with correct params' do
-      stub = stub_request(:post, 'https://smsc.ru/sys/status.php?charset=utf-8&fmt=1&login=test_login&psw=test_passwd')
+      stub = stub_request(:post, 'https://smsc.ru/sys/status.php').with(
+        body: {
+          'id' => '123',
+          'phone' => '79991234567',
+          'fmt' => '1',
+          'charset' => 'utf-8',
+          'login' => 'test_login',
+          'psw' => 'test_passwd',
+          'all' => '0'
+        }
+      )
       request
       expect(stub).to have_been_requested
+    end
+
+    context 'with other parameters' do
+      subject(:request) { described_class.status(123, '79991234567', all: true, fmt: 2) }
+
+      it 'makes a request with correct params' do
+        stub = stub_request(:post, 'https://smsc.ru/sys/status.php').with(
+          body: {
+            'id' => '123',
+            'phone' => '79991234567',
+            'fmt' => '2',
+            'charset' => 'utf-8',
+            'login' => 'test_login',
+            'psw' => 'test_passwd',
+            'all' => '1'
+          }
+        )
+        request
+        expect(stub).to have_been_requested
+      end
     end
   end
 
@@ -98,7 +175,14 @@ RSpec.describe ActieSmsc do
     subject(:request) { described_class.balance }
 
     it 'makes a request with correct params' do
-      stub = stub_request(:post, 'https://smsc.ru/sys/balance.php?charset=utf-8&fmt=1&login=test_login&psw=test_passwd')
+      stub = stub_request(:post, 'https://smsc.ru/sys/balance.php').with(
+          body: {
+            'fmt' => '1',
+            'charset' => 'utf-8',
+            'login' => 'test_login',
+            'psw' => 'test_passwd'
+          }
+        )
       request
       expect(stub).to have_been_requested
     end
