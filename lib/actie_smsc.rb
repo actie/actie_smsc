@@ -17,7 +17,7 @@ module ActieSmsc
       yield(config)
     end
 
-    def send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, sender: nil, **query_params)
+    def send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, sender: nil, fmt: 1, query_params: {})
       request_params = { cost: 3, phones: phones_string(phones), mes: message, id: id }
       request_params[:translit] = (0..2).include?(translit) ? translit : 0
       request_params[format] = format_value(format) if format_value(format)
@@ -47,7 +47,7 @@ module ActieSmsc
       end
     end
 
-    def sms_cost(phones, message, translit: 0, format: nil, sender: nil, **query_params)
+    def sms_cost(phones, message, translit: 0, format: nil, sender: nil, fmt: 1, query_params: {})
       request_params = { cost: 1, phones: phones_string(phones), mes: message }
       request_params[:translit] = (0..2).include?(translit) ? translit : 0
       request_params[format] = format_value(format) if format_value(format)
@@ -71,7 +71,7 @@ module ActieSmsc
       end
     end
 
-    def status(id, phone, all: false)
+    def status(id, phone, all: false, fmt: 1)
       request_params = { phone: phone, id: id }
       request_params[:all] = (all && all != 0) ? 1 : 0
 
@@ -113,7 +113,7 @@ module ActieSmsc
       end
     end
 
-    def balance
+    def balance(fmt: 1)
       resp = request('balance')
 
       check_response_for_exception(resp.body)
@@ -131,8 +131,7 @@ module ActieSmsc
       {
         login: config.login,
         psw: config.password,
-        charset: config.charset,
-        fmt: 1
+        charset: config.charset
       }
     end
 

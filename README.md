@@ -48,7 +48,7 @@ There are four public methods for different API endpoints. Each method returns a
 ### Send sms
 
 ```ruby
-ActieSmsc.send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, sender: nil, **query_params)
+ActieSmsc.send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, sender: nil, fmt: 1, query_params: {})
 ```
 
 The required parameters are: `phones` - array or string separated by commas and `message` as string. Other parameters have default values and described in SMSC library.
@@ -70,7 +70,7 @@ Method returns result hash:
 ### Sms cost
 
 ```ruby
-ActieSmsc.sms_cost(phones, message, translit: 0, format: nil, sender: nil, **query_params)
+ActieSmsc.sms_cost(phones, message, translit: 0, format: nil, sender: nil, fmt: 1, query_params: {})
 ```
 
 This method checks the message cost. It receives the same parameters as `send_sms` method.
@@ -83,7 +83,7 @@ Returns the result hash:
 ### Status
 
 ```ruby
-ActieSmsc.status(id, phone, all: false)
+ActieSmsc.status(id, phone, all: false, fmt: 1)
 ```
 
 Returns the delivery status for exact message and exact phone. Receives the message ID and phone number. The additional parameter `all` used to increase the number of returned values.
@@ -114,7 +114,7 @@ If parameter `all` changed to `true`, result hash will additionaly include value
 ### Balance
 
 ```ruby
-ActieSmsc.balance
+ActieSmsc.balance(fmt: 1)
 ```
 This method returns the balance of your SMSC account as float number.
 
