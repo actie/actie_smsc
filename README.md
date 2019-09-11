@@ -55,12 +55,17 @@ The required parameters are: `phones` - array or string separated by commas and 
 
 ```
 translit - transliterate message text. Values:1,2 or 0
-time - delivery time (DDMMYYhhmm, h1-h2, 0ts, +m)
+time - delivery time (could be a `Time, Date, DateTime` object, or a string). There are several string formats:
+  +m (e.g. `+10`) - Send the message 10 minutes later.
+  h1-h2 (e.g. `9-20`) - Message can be sent only in the period from 9 am to 20 pm. If it's too late, it'll be sent next day.
+  DDMMYYhhmm - string format for the exact time, it's also used for a Time object.
+  0ts (e.g. `01568230028`) - UNIX time format with a `0` as a prefix.
 id - message id. Value - integer number from 1 to 2147483647.
 format - message format. Values: [:flash, :push, :hlr, :bin, :bin_hex, :ping, :mms, :mail, :call, :viber, :soc]
 sender - Sender name. To disable default name use empty line, or '.'
 query - hash with additional parameters which will be added to the request (e.g. { valid: '01:00', maxsms: 3, tz: 2 })
 ```
+Additionaly to
 
 Method returns result hash:
 ```ruby
@@ -88,15 +93,9 @@ ActieSmsc.status(id, phone, all: false, fmt: 1)
 
 Returns the delivery status for exact message and exact phone. Receives the message ID and phone number. The additional parameter `all` used to increase the number of returned values.
 
-The result hash is different for Sms and HLR requests.
-
-For sms:
+Returns the result hash:
 ```ruby
 { status: 1, change_time: 2019-09-08 15:00:00 +0300, error_code: 0 }
-```
-
-For HLR:
-```ruby
 ```
 
 If parameter `all` changed to `true`, result hash will additionaly include values:

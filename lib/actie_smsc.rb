@@ -4,6 +4,7 @@ require 'actie_smsc/version'
 require 'actie_smsc/configuration'
 require 'faraday'
 require 'json'
+require 'date'
 
 module ActieSmsc
   class SmscError < StandardError; end
@@ -22,14 +23,14 @@ module ActieSmsc
       request_params[:translit] = (0..2).include?(translit) ? translit : 0
       request_params[format] = format_value(format) if format_value(format)
       request_params[:sender] = sender if sender
-      request_params[:time] = time if time
+      request_params[:time] = time_string(time) if time
       request_params.merge!(query_params)
 
       resp = request('send', request_params)
 
       check_response_for_exception(resp.body)
 
-      case query_params[:fmt]
+      case fmt
       when 2,0
         resp.body
       when 3
@@ -58,7 +59,7 @@ module ActieSmsc
 
       check_response_for_exception(resp.body)
 
-      case query_params[:fmt]
+      case fmt
       when 2,0
         resp.body
       when 3
@@ -79,7 +80,7 @@ module ActieSmsc
 
       check_response_for_exception(resp.body)
 
-      case query_params[:fmt]
+      case fmt
       when 2,0
         resp.body
       when 3
@@ -118,7 +119,16 @@ module ActieSmsc
 
       check_response_for_exception(resp.body)
 
-      resp.body.to_f
+      case fmt
+      when 2,0
+        resp.body
+      when 3
+        JSON.parse(resp.body)
+      when :response
+        resp
+      else
+        resp.body.to_f
+      end
     end
 
     private
@@ -165,6 +175,14 @@ module ActieSmsc
         viber:   1,
         soc:     1
       }[format]
+    end
+
+    def time_string(time)
+      if time.is_a?(Time) || time.is_a?(Date)
+        time.strftime('%d%m%y%H%M')
+      else
+        time
+      end
     end
 
     def phones_string(phones)
