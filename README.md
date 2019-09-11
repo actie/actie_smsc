@@ -53,19 +53,16 @@ ActieSmsc.send_sms(phones, message, translit: 0, time: nil, id: 0, format: nil, 
 
 The required parameters are: `phones` - array or string separated by commas and `message` as string. Other parameters have default values and described in SMSC library.
 
-```
-translit - transliterate message text. Values:1,2 or 0
-time - delivery time (could be a `Time, Date, DateTime` object, or a string). There are several string formats:
+* translit - transliterate message text. Values:1,2 or 0
+* time - delivery time (could be a `Time, Date, DateTime` object, or a string). There are several string formats:
   +m (e.g. `+10`) - Send the message 10 minutes later.
   h1-h2 (e.g. `9-20`) - Message can be sent only in the period from 9 am to 20 pm. If it's too late, it'll be sent next day.
   DDMMYYhhmm - string format for the exact time, it's also used for a Time object.
   0ts (e.g. `01568230028`) - UNIX time format with a `0` as a prefix.
-id - message id. Value - integer number from 1 to 2147483647.
-format - message format. Values: [:flash, :push, :hlr, :bin, :bin_hex, :ping, :mms, :mail, :call, :viber, :soc]
-sender - Sender name. To disable default name use empty line, or '.'
-query - hash with additional parameters which will be added to the request (e.g. { valid: '01:00', maxsms: 3, tz: 2 })
-```
-Additionaly to
+* id - message id. Value - integer from 1 to 2147483647.
+* format - message format. Values: [:flash, :push, :hlr, :bin, :bin_hex, :ping, :mms, :mail, :call, :viber, :soc]
+* sender - Sender name. To disable default name use empty line, or '.'
+* query - hash with additional parameters which will be added to the request (e.g. `{ valid: '01:00', maxsms: 3, tz: 2 }`)
 
 Method returns result hash:
 ```ruby
