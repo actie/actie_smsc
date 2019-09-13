@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'timecop'
+require 'webmock/rspec'
 
 RSpec.describe ActieSmsc do
   it 'has a version number' do

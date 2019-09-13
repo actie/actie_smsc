@@ -2,7 +2,6 @@
 
 require 'bundler/setup'
 require 'actie_smsc'
-require 'webmock/rspec'
 require 'pry'
 
 RSpec.configure do |config|
