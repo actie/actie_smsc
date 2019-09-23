@@ -1,5 +1,5 @@
 # ActieSmsc
-[Build Status](https://travis-ci.org/actie/actie_smsc.svg?branch=master)
+![Build Status](https://travis-ci.org/actie/actie_smsc.svg?branch=master)
 
 This gem implements SMSC service API and based on this library: https://smsc.ru/api/code/libraries/http_smtp/ruby/
 
